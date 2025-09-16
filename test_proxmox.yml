@@ -1,0 +1,7 @@
+---
+- name: Verify Proxmox EE
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Check available Proxmox modules
+      command: ansible-doc -t module -l | grep proxmox
