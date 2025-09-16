@@ -1,4 +1,4 @@
-ARG EE_BASE_IMAGE="quay.io/centos/centos:stream9"
+ARG EE_BASE_IMAGE="quay.io/ansible/awx-ee:latest"
 ARG PYCMD="/usr/bin/python3"
 ARG PKGMGR_PRESERVE_CACHE=""
 ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS=""
@@ -20,8 +20,8 @@ ARG PKGMGR
 
 COPY _build/scripts/ /output/scripts/
 COPY _build/scripts/entrypoint /opt/builder/bin/entrypoint
-RUN dnf install -y gcc make python3-devel && dnf clean all
 RUN pip3 install --upgrade pip setuptools wheel
+RUN dnf install -y gcc make python3-devel libxml2-devel libcurl-devel openssl-devel && dnf clean all
 RUN /output/scripts/pip_install $PYCMD
 RUN $PYCMD -m pip install --no-cache-dir $ANSIBLE_INSTALL_REFS
 
@@ -59,7 +59,8 @@ RUN $PYCMD -m pip install --no-cache-dir bindep pyyaml packaging
 
 COPY --from=galaxy /usr/share/ansible /usr/share/ansible
 
-RUN $PYCMD /output/scripts/introspect.py introspect --write-bindep=/tmp/src/bindep.txt --write-pip=/tmp/src/requirements.txt
+COPY _build/requirements.txt requirements.txt
+RUN $PYCMD /output/scripts/introspect.py introspect --user-pip=requirements.txt --write-bindep=/tmp/src/bindep.txt --write-pip=/tmp/src/requirements.txt
 RUN /output/scripts/assemble
 
 # Final build stage
