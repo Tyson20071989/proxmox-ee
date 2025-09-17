@@ -1,0 +1,21 @@
+---
+- name: List all VMs on Proxmox nodes
+  hosts: proxmox
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Get list of VMs on each node
+      command: qm list
+      register: vm_list_raw
+      changed_when: false
+
+    - name: Save VM list output per node
+      set_fact:
+        vm_list: "{{ vm_list_raw.stdout_lines }}"
+
+    - name: Print VMs for each node
+      debug:
+        msg: |
+          Node: {{ inventory_hostname }}
+          {{ vm_list | join('\n') }}
